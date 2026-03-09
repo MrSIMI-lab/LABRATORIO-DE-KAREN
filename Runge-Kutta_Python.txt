@@ -1,0 +1,46 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Definición de la función f(E, x)
+def f(E, x):
+    try:
+        return -16.4104 * ((E**4) / ((E**2 - 11.15e3)**2) * np.log((2 * (E**2 - 11.15e3)**2) / (6.8323e-3 * E**2)) - 1)
+    except ZeroDivisionError:
+        return 0
+
+# Método de Runge-Kutta 4
+def runge_kutta_4(f, E0, x0, xf, h):
+    n = int((xf - x0) / h)  # número de pasos
+    xs = np.zeros(n+1)
+    Es = np.zeros(n+1)
+
+    xs[0], Es[0] = x0, E0
+
+    for i in range(n):
+        k1 = h * f(Es[i], xs[i])
+        k2 = h * f(Es[i] + 0.5*k1, xs[i] + 0.5*h)
+        k3 = h * f(Es[i] + 0.5*k2, xs[i] + 0.5*h)
+        k4 = h * f(Es[i] + k3, xs[i] + h)
+
+        Es[i+1] = Es[i] + (k1 + 2*k2 + 2*k3 + k4) / 6
+        xs[i+1] = xs[i] + h
+
+    return xs, Es
+
+# Parámetros iniciales
+E0 = 1e3  # Energía inicial (ejemplo en MeV)
+x0 = 0.0        # x inicial
+xf = 10      # x final (unidades según el contexto físico)
+h = 0.01        # paso
+
+# Resolver la EDO
+x_vals, E_vals = runge_kutta_4(f, E0, x0, xf, h)
+
+# Graficar
+plt.plot(x_vals, E_vals, label="E(x)")
+plt.xlabel("x")
+plt.ylabel("E")
+plt.title("Solución de dE/dx con RK4")
+plt.legend()
+plt.grid()
+plt.show()
