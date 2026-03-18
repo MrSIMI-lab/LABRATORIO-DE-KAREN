@@ -1,0 +1,75 @@
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")   # backend sin pantalla
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+def aproximar_volumen_esfera_con_cascara(n_puntos):
+
+    # --- Simulación Monte Carlo ---
+    # 1. Generar puntos aleatorios en 3D (x, y, z)
+    x = np.random.uniform(-1, 1, n_puntos)
+    y = np.random.uniform(-1, 1, n_puntos)
+    z = np.random.uniform(-1, 1, n_puntos)
+
+    # 2. Distancia al origen (al cuadrado) en 3D
+    distancia_sq = x**2 + y**2 + z**2
+
+    # 3. Puntos dentro de la esfera (Radio = 1)
+    dentro_esfera = distancia_sq <= 1
+    n_dentro = np.sum(dentro_esfera)
+
+    # 4. Aproximación del volumen
+    volumen_aprox = (n_dentro / n_puntos) * 8
+    volumen_teorico = (4/3) * np.pi
+    
+    print(f"Puntos: {n_puntos}")
+    print(f"Volumen Aproximado: {volumen_aprox:.4f}")
+    print(f"Volumen Teórico: {volumen_teorico:.4f}")
+
+    # --- Visualización ---
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    
+    # 1. Puntos internos (reducimos alpha para ver a través)
+    # Usamos un color azul más intenso para el núcleo
+    ax.scatter(x[dentro_esfera], y[dentro_esfera], z[dentro_esfera],
+               s=1, c='blue', alpha=0.1, label='Puntos internos')
+
+    # 2. Generar y dibujar la "Cáscara" (superficie esférica)
+    # Creamos una malla de coordenadas esféricas
+    phi, theta = np.mgrid[0.0:np.pi:20j, 0.0:2.0*np.pi:20j]
+    x_cascara = np.sin(phi) * np.cos(theta)
+    y_cascara = np.sin(phi) * np.sin(theta)
+    z_cascara = np.cos(phi)
+
+    # Dibujamos la superficie como una malla de alambre semitransparente
+    # 'plot_wireframe' crea una red de líneas que definen la esfera
+    ax.plot_wireframe(x_cascara, y_cascara, z_cascara, color='red', alpha=0.3, linewidth=0.5, label='Cáscara (R=1)')
+
+    # Opcional: Usar 'plot_surface' para una cáscara sólida translúcida
+    # ax.plot_surface(x_cascara, y_cascara, z_cascara, color='cyan', alpha=0.2, rstride=1, cstride=1, linewidth=0, antialiased=False)
+
+    # --- Configuración del gráfico ---
+    ax.set_title('Monte Carlo: Puntos dentro de una Cáscara Esférica')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    # Fijar límites para mantener proporción visual del cubo
+    ax.set_xlim(-1, 1); ax.set_ylim(-1, 1); ax.set_zlim(-1, 1)
+    
+    # Crear una leyenda personalizada (a veces necesario en 3D)
+    from matplotlib.lines import Line2D
+    legend_elements = [
+        Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', markersize=5, alpha=0.5, label='Puntos Internos'),
+        Line2D([0], [0], color='red', lw=2, alpha=0.4, label='Cáscara (Surface)')
+    ]
+    ax.legend(handles=legend_elements)
+
+    plt.savefig("montecarlo_esfera_cascara.png", dpi=150)
+    plt.close()
+
+    return volumen_aprox
+
+# Ejecutar con más puntos para que se vea denso dentro de la cáscara
+aproximar_volumen_esfera_con_cascara(20000)
