@@ -1,0 +1,53 @@
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")   # backend sin pantalla
+import matplotlib.pyplot as plt
+
+def aproximar_area_circulo(n_puntos):
+
+    # 1. Generar puntos aleatorios
+    x = np.random.uniform(-1, 1, n_puntos)
+    y = np.random.uniform(-1, 1, n_puntos)
+
+    # 2. Distancia al origen (al cuadrado)
+    distancia = x**2 + y**2
+
+    # 3. Puntos dentro del círculo
+    dentro_circulo = distancia <= 1
+    n_dentro = np.sum(dentro_circulo)
+
+    # 4. Aproximación del área
+    area_aprox = (n_dentro / n_puntos) * 4
+    print(f"Puntos: {n_puntos} | Área aproximada: {area_aprox}")
+
+    # 5. Visualización
+    plt.figure(figsize=(12, 5))
+
+    # Scatter plot
+    plt.subplot(1, 2, 1)
+    plt.scatter(x[dentro_circulo], y[dentro_circulo],
+                s=1, color='blue', label='Dentro del círculo')
+    plt.scatter(x[~dentro_circulo], y[~dentro_circulo],
+                s=1, color='red', label='Fuera del círculo')
+    plt.title('Simulación Monte Carlo')
+    plt.legend()
+    plt.axis('equal')
+
+    # Histograma de distancias
+    plt.subplot(1, 2, 2)
+    plt.hist(np.sqrt(distancia), bins=50, alpha=0.7)
+    plt.axvline(1, color='red', linestyle='dashed', linewidth=2, label='Radio = 1')
+    plt.title('Histograma de distancias al centro')
+    plt.xlabel('Distancia')
+    plt.ylabel('Frecuencia')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig("montecarlo_circulo.png", dpi=300)
+    plt.close()
+
+    return area_aprox
+
+
+# Ejecutar
+aproximar_area_circulo(10000)
